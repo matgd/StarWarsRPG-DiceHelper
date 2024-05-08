@@ -11,79 +11,29 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type CoreAttribute struct {
-	name  string
-	value int
-}
-
-type Attribute struct {
-	name        string
-	proficiency int // wyszkolenie
-	focus       int // skupienie
-
-}
-
-type CoreAttributes struct {
-	body   CoreAttribute
-	mind   CoreAttribute
-	spirit CoreAttribute
-}
-
-func newCoreAttributes() CoreAttributes {
-	return CoreAttributes{
-		body:   CoreAttribute{name: "Ciało", value: 0},
-		mind:   CoreAttribute{name: "Umysł", value: 0},
-		spirit: CoreAttribute{name: "Dusza", value: 0},
-	}
-}
-
-type Attributes struct {
-	athletics Attribute
-	vigilance Attribute
-}
-
-func newAttributes() Attributes {
-	return Attributes{
-		athletics: Attribute{name: "Atletyka", proficiency: 0, focus: 0},
-		vigilance: Attribute{name: "Czujność", proficiency: 0, focus: 0},
-	}
-}
-
-type Character struct {
-	name           string
-	coreAttributes CoreAttributes
-	attributes     Attributes
-}
-
-func newCharacter(name string) Character {
-	return Character{
-		name:           name,
-		coreAttributes: newCoreAttributes(),
-		attributes:     newAttributes(),
-	}
-}
-
 func main() {
 	a := app.New()
 	w := a.NewWindow("Hello")
 	w.Resize(fyne.NewSize(400, 300))
 
-	character := newCharacter("Gordo")
+	playerCharacter := NewCharacter("Gordo")
+	calculator := NewDiceCalculator(&playerCharacter)
 
-	chosenCoreAttributeRadio := widget.NewRadioGroup([]string{"Ciało", "Umysł", "Dusza"}, func(s string) {
-		switch s {
-		case "Ciało":
-			character.coreAttributes.body.value++
-		case "Umysł":
-			character.coreAttributes.mind.value++
-		case "Dusza":
-			character.coreAttributes.spirit.value++
+	chosenCoreAttributeRadio := widget.NewRadioGroup([]string{string(BODY), string(MIND), string(SPIRIT)}, func(s string) {
+		switch CoreAttributeName(s) {
+		case BODY:
+			calculator.SetCoreAttribute(BODY)
+		case MIND:
+			calculator.SetCoreAttribute(MIND)
+		case SPIRIT:
+			calculator.SetCoreAttribute(SPIRIT)
 		}
+		calculator.Print()
 	})
-	coreAttributeWidgets := [][3]fyne.CanvasObject{
-		{widget.NewEntry(), widget.NewLabel(character.coreAttributes.body.name)},
-		{widget.NewEntry(), widget.NewLabel(character.coreAttributes.mind.name)},
-		{widget.NewEntry(), widget.NewLabel(character.coreAttributes.spirit.name)},
+	coreAttributeWidgets := [][2]fyne.CanvasObject{
+		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.body.Name()))},
+		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.mind.Name()))},
+		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.spirit.Name()))},
 	}
 
 	w.SetContent(container.NewVBox(
