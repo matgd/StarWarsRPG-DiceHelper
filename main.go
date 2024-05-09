@@ -29,6 +29,7 @@ func main() {
 			calculator.SetCoreAttribute(SPIRIT)
 		}
 		calculator.Print()
+		playerCharacter.Print()
 	})
 	coreAttributeWidgets := [][2]fyne.CanvasObject{
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.body.Name()))},
