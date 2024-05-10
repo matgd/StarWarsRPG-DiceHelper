@@ -12,23 +12,24 @@ import (
 )
 
 const (
-	APP_NAME      string  = "Star Wars PRG Dice Calculator"
-	WINDOW_SIZE_X float32 = 600
-	WINDOW_SIZE_Y float32 = 300
+	APP_NAME             string  = "Star Wars PRG Dice Calculator"
+	WINDOW_SIZE_X        float32 = 600
+	WINDOW_SIZE_Y        float32 = 300
+	ATTRIBUTE_GROUP_SIZE int     = 6
 )
 
 func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
-	coreAttributeWidgets := [][2]fyne.CanvasObject{
+	widgetPairs := [][2]fyne.CanvasObject{
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.body.Name()))},
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.mind.Name()))},
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.spirit.Name()))},
 	}
 
-	return []fyne.CanvasObject{
-		container.NewHBox(coreAttributeWidgets[0][0], coreAttributeWidgets[0][1]),
-		container.NewHBox(coreAttributeWidgets[1][0], coreAttributeWidgets[1][1]),
-		container.NewHBox(coreAttributeWidgets[2][0], coreAttributeWidgets[2][1]),
+	hboxes := []fyne.CanvasObject{}
+	for i := 0; i < len(widgetPairs); i++ {
+		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
 	}
+	return hboxes
 }
 
 func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
@@ -48,8 +49,8 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 	return coreAttributeRadio
 }
 
-func attributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
-	attributeWidgets := [][2]fyne.CanvasObject{
+func attributeVBoxes(playerCharacter *Character) []fyne.CanvasObject {
+	widgets := [][2]fyne.CanvasObject{
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.athletics.Name()))},
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.vigilance.Name()))},
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.determination.Name()))},
@@ -76,34 +77,51 @@ func attributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.natureKnowledge.Name()))},
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.entartainment.Name()))},
 		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.intimidation.Name()))},
+		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.agility.Name()))},
 	}
 
-	return []fyne.CanvasObject{
-		container.NewHBox(attributeWidgets[0][0], attributeWidgets[0][1]),
+	vboxes := []fyne.CanvasObject{}
+	hboxStack := []fyne.CanvasObject{}
+	for i := 0; i <= len(widgets); i++ {
+		if i%ATTRIBUTE_GROUP_SIZE == 0 && i != 0 {
+			vboxes = append(vboxes, container.NewVBox(hboxStack...))
+			hboxStack = []fyne.CanvasObject{}
+		}
+		if i == len(widgets) {
+			break
+		}
+		hboxStack = append(hboxStack, container.NewHBox(widgets[i][0], widgets[i][1]))
 	}
+	return vboxes
 }
 
-func leftVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.CanvasObject {
-	left := []fyne.CanvasObject{}
-	left = append(left, coreAttributeHBoxes(playerCharacter)...)
-	left = append(left, widget.NewSeparator())
-	left = append(left, calculatorCoreAttributeRadio(calculator))
+func searchBar() fyne.CanvasObject {
+	w := widget.NewEntry()
+	w.SetPlaceHolder("Filtruj...")
+	// TODO: Center
+	return w
+}
+
+func upperLeftVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.CanvasObject {
+	upperLeft := []fyne.CanvasObject{}
+	upperLeft = append(upperLeft, coreAttributeHBoxes(playerCharacter)...)
 	return container.NewVBox(
-		left...,
+		upperLeft...,
 	)
 }
 
-func rightVBox(playerCharacter *Character) fyne.CanvasObject {
-	right := []fyne.CanvasObject{}
-	right = append(right, attributeHBoxes(playerCharacter)...)
-	return container.NewVBox(
-		right...,
+func upperRightVBox(playerCharacter *Character) fyne.CanvasObject {
+	upperRight := []fyne.CanvasObject{}
+	upperRight = append(upperRight, attributeVBoxes(playerCharacter)...)
+	return container.NewHBox(
+		upperRight...,
 	)
 }
 
 func main() {
 	a := app.New()
 	a.Settings().SetTheme(&MyTheme{})
+	pl := Locale{}
 
 	w := a.NewWindow(APP_NAME)
 	w.Resize(fyne.NewSize(WINDOW_SIZE_X, WINDOW_SIZE_Y))
@@ -111,10 +129,19 @@ func main() {
 	playerCharacter := NewCharacter("Gordo")
 	calculator := NewDiceCalculator(&playerCharacter)
 
-	w.SetContent(container.NewHBox(
-		container.NewVBox(leftVBox(&playerCharacter, &calculator)),
+	w.SetContent(container.NewVBox(
+		searchBar(),
+		container.NewHBox(
+			container.NewVBox(upperLeftVBox(&playerCharacter, &calculator)),
+			widget.NewSeparator(),
+			container.NewVBox(upperRightVBox(&playerCharacter)),
+		),
+		&widget.Button{Text: pl.Save()},
 		widget.NewSeparator(),
-		container.NewVBox(rightVBox(&playerCharacter)),
+		container.NewHBox(
+			calculatorCoreAttributeRadio(&calculator),
+			widget.NewSeparator(),
+		),
 	))
 
 	w.ShowAndRun()
