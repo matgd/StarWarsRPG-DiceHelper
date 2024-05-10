@@ -2,6 +2,7 @@
 
 TODO:
 
+- [] Focus for non-core attributes
 - [] Search bar
 - [] Save to CSV
 - [] Reload from CSV
