@@ -4,6 +4,7 @@ type LocalePL interface {
 	Save() string
 	Filter3Dots() string
 	DodatkoweKosci() string
+	SavingSuccessful() string
 }
 
 type Locale struct {
@@ -21,4 +22,8 @@ func (l Locale) Filter3Dots() string {
 
 func (l Locale) DodatkoweKosci() string {
 	return "Dodatkowe kości"
+}
+
+func (l Locale) SavingSuccessful() string {
+	return "Zapisano pomyślnie"
 }

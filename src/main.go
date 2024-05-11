@@ -13,6 +13,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -27,6 +28,7 @@ const (
 var pl LocalePL = Locale{}
 
 var diceRollLabel *canvas.Text = nil // Cannot be initialized here before fyne app works
+var loadedSaveData *SaveData = nil
 
 func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	e := widget.NewEntry
@@ -47,7 +49,6 @@ func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 
 		ne := e()
 		ne.OnChanged = func(s string) {
-			// TODO: Load from file
 			if s == "" || s == "-" {
 				attr.SetValue(0)
 			} else if intValue, err := strconv.Atoi(s); err == nil {
@@ -58,6 +59,10 @@ func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			diceRollLabel.Text = calculator.DiceRollText()
 			diceRollLabel.Refresh()
 		}
+
+		// Load from file
+		ne.SetText(fmt.Sprint(loadedSaveData.RestoreCoreAttribute(attribute.Name())))
+
 		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, l(string(attribute.Name()))})
 		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
 	}
@@ -283,6 +288,8 @@ func main() {
 	a := app.New()
 	a.Settings().SetTheme(&MyTheme{})
 	diceRollLabel = canvas.NewText("", color.White)
+	loadedSaveData, _ = LoadFromFile()
+	fmt.Println(loadedSaveData)
 
 	w := a.NewWindow(fmt.Sprintf("%s (ver. %s)", APP_NAME, APP_VERSION))
 	w.Resize(fyne.NewSize(WINDOW_SIZE_X, WINDOW_SIZE_Y))
@@ -293,6 +300,14 @@ func main() {
 	diceRollLabel.Alignment = fyne.TextAlignCenter
 	diceRollLabel.Text = calculator.DiceRollText()
 
+	saveButton := widget.NewButton(pl.Save(), func() {
+		if err := SaveToFile(&calculator); err == nil {
+			dialog.ShowInformation(pl.Save(), pl.SavingSuccessful(), w)
+		} else {
+			dialog.ShowError(err, w)
+		}
+	})
+
 	w.SetContent(container.NewVBox(
 		searchBar(),
 		container.NewHBox(
@@ -300,7 +315,7 @@ func main() {
 			widget.NewSeparator(),
 			container.NewVBox(upperRightVBox(&calculator)),
 		),
-		&widget.Button{Text: pl.Save()},
+		saveButton,
 		widget.NewSeparator(),
 		container.NewHBox(
 			calculatorCoreAttributeRadio(&calculator),
