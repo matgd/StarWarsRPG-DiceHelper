@@ -129,38 +129,39 @@ func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 
 }
 
-func attributeVBoxes(playerCharacter *Character) []fyne.CanvasObject {
+func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	l := widget.NewLabel
 	e := widget.NewEntry
+	playerCharacter := calculator.character
 
-	widgets := [][3]fyne.CanvasObject{
-		{l(string(playerCharacter.attributes.athletics.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.vigilance.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.determination.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.fortidude.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.intuition.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.strength.Name())), e(), e()},
+	attributes := []*Attribute{
+		&playerCharacter.attributes.athletics,
+		&playerCharacter.attributes.vigilance,
+		&playerCharacter.attributes.determination,
+		&playerCharacter.attributes.fortidude,
+		&playerCharacter.attributes.intuition,
+		&playerCharacter.attributes.strength,
 
-		{l(string(playerCharacter.attributes.medics.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.taming.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.religiousness.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.cunning.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.survival.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.reflexes.Name())), e(), e()},
+		&playerCharacter.attributes.medics,
+		&playerCharacter.attributes.taming,
+		&playerCharacter.attributes.religiousness,
+		&playerCharacter.attributes.cunning,
+		&playerCharacter.attributes.survival,
+		&playerCharacter.attributes.reflexes,
 
-		{l(string(playerCharacter.attributes.craftmanship.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.stealth.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.force.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.theology.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.ranged.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.melee.Name())), e(), e()},
+		&playerCharacter.attributes.craftmanship,
+		&playerCharacter.attributes.stealth,
+		&playerCharacter.attributes.force,
+		&playerCharacter.attributes.theology,
+		&playerCharacter.attributes.ranged,
+		&playerCharacter.attributes.melee,
 
-		{l(string(playerCharacter.attributes.knowledge.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.secretKnowledge.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.natureKnowledge.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.entartainment.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.intimidation.Name())), e(), e()},
-		{l(string(playerCharacter.attributes.agility.Name())), e(), e()},
+		&playerCharacter.attributes.knowledge,
+		&playerCharacter.attributes.secretKnowledge,
+		&playerCharacter.attributes.natureKnowledge,
+		&playerCharacter.attributes.entartainment,
+		&playerCharacter.attributes.intimidation,
+		&playerCharacter.attributes.agility,
 	}
 
 	vboxes := []fyne.CanvasObject{}
@@ -168,6 +169,39 @@ func attributeVBoxes(playerCharacter *Character) []fyne.CanvasObject {
 	leftVBoxStack := []fyne.CanvasObject{}
 	middleVBoxStack := []fyne.CanvasObject{}
 	rightVBoxStack := []fyne.CanvasObject{}
+
+	widgets := [][3]fyne.CanvasObject{}
+	for _, attribute := range attributes {
+		attr := attribute // Pointer magic boooo (seriously, good that I've read about it)
+		// ^ Without this setting will only work on last element
+
+		ne0 := e()
+		ne1 := e()
+		ne0.OnChanged = func(s string) {
+			// TODO: Load from file
+			if s == "" || s == "-" {
+				attr.SetProficiency(0)
+			} else if intValue, err := strconv.Atoi(s); err == nil {
+				attr.SetProficiency(intValue)
+			} else {
+				ne0.SetText("0")
+			}
+			diceRollLabel.SetText(calculator.DiceRollText())
+		}
+		ne1.OnChanged = func(s string) {
+			// TODO: Load from file
+			if s == "" || s == "-" {
+				attr.SetFocus(0)
+			} else if intValue, err := strconv.Atoi(s); err == nil {
+				attr.SetFocus(intValue)
+			} else {
+				ne1.SetText("0")
+			}
+			diceRollLabel.SetText(calculator.DiceRollText())
+		}
+
+		widgets = append(widgets, [3]fyne.CanvasObject{l(string(attribute.Name())), ne0, ne1})
+	}
 
 	column := 0
 	for i := 0; i <= len(widgets); i++ {
@@ -210,9 +244,9 @@ func upperLeftVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.
 	)
 }
 
-func upperRightVBox(playerCharacter *Character) fyne.CanvasObject {
+func upperRightVBox(calculator *DiceCalculator) fyne.CanvasObject {
 	upperRight := []fyne.CanvasObject{}
-	upperRight = append(upperRight, attributeVBoxes(playerCharacter)...)
+	upperRight = append(upperRight, attributeVBoxes(calculator)...)
 	return container.NewHBox(
 		upperRight...,
 	)
@@ -252,7 +286,7 @@ func main() {
 		container.NewHBox(
 			container.NewVBox(upperLeftVBox(&playerCharacter, &calculator)),
 			widget.NewSeparator(),
-			container.NewVBox(upperRightVBox(&playerCharacter)),
+			container.NewVBox(upperRightVBox(&calculator)),
 		),
 		&widget.Button{Text: pl.Save()},
 		widget.NewSeparator(),
