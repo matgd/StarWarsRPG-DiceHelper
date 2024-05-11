@@ -50,47 +50,67 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 }
 
 func attributeVBoxes(playerCharacter *Character) []fyne.CanvasObject {
-	widgets := [][2]fyne.CanvasObject{
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.athletics.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.vigilance.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.determination.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.fortidude.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.intuition.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.strength.Name()))},
+	l := widget.NewLabel
+	e := widget.NewEntry
 
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.medics.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.taming.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.religiousness.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.cunning.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.survival.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.reflexes.Name()))},
+	widgets := [][3]fyne.CanvasObject{
+		{l(string(playerCharacter.attributes.athletics.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.vigilance.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.determination.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.fortidude.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.intuition.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.strength.Name())), e(), e()},
 
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.craftmanship.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.stealth.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.force.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.theology.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.ranged.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.melee.Name()))},
+		{l(string(playerCharacter.attributes.medics.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.taming.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.religiousness.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.cunning.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.survival.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.reflexes.Name())), e(), e()},
 
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.knowledge.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.secretKnowledge.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.natureKnowledge.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.entartainment.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.intimidation.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.attributes.agility.Name()))},
+		{l(string(playerCharacter.attributes.craftmanship.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.stealth.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.force.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.theology.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.ranged.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.melee.Name())), e(), e()},
+
+		{l(string(playerCharacter.attributes.knowledge.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.secretKnowledge.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.natureKnowledge.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.entartainment.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.intimidation.Name())), e(), e()},
+		{l(string(playerCharacter.attributes.agility.Name())), e(), e()},
 	}
 
 	vboxes := []fyne.CanvasObject{}
-	hboxStack := []fyne.CanvasObject{}
+
+	leftVBoxStack := []fyne.CanvasObject{}
+	middleVBoxStack := []fyne.CanvasObject{}
+	rightVBoxStack := []fyne.CanvasObject{}
+
+	column := 0
 	for i := 0; i <= len(widgets); i++ {
 		if i%ATTRIBUTE_GROUP_SIZE == 0 && i != 0 {
-			vboxes = append(vboxes, container.NewVBox(hboxStack...))
-			hboxStack = []fyne.CanvasObject{}
+			leftVBox := container.NewVBox(leftVBoxStack...)
+			middleVBox := container.NewVBox(middleVBoxStack...)
+			rightVBox := container.NewVBox(rightVBoxStack...)
+
+			hboxStack := []fyne.CanvasObject{leftVBox, middleVBox, rightVBox}
+			vboxes = append(vboxes, container.NewVBox(container.NewHBox(hboxStack...)))
+
+			leftVBoxStack = []fyne.CanvasObject{}
+			middleVBoxStack = []fyne.CanvasObject{}
+			rightVBoxStack = []fyne.CanvasObject{}
 		}
 		if i == len(widgets) {
 			break
 		}
-		hboxStack = append(hboxStack, container.NewHBox(widgets[i][0], widgets[i][1]))
+		leftVBoxStack = append(leftVBoxStack, widgets[i][0])
+		middleVBoxStack = append(middleVBoxStack, widgets[i][1])
+		rightVBoxStack = append(rightVBoxStack, widgets[i][2])
+		column++
+
 	}
 	return vboxes
 }
