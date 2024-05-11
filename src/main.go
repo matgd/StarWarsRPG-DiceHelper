@@ -6,10 +6,12 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
@@ -24,7 +26,7 @@ const (
 
 var pl LocalePL = Locale{}
 
-var diceRollLabel = widget.NewLabel("")
+var diceRollLabel *canvas.Text = nil // Cannot be initialized here before fyne app works
 
 func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	e := widget.NewEntry
@@ -53,7 +55,8 @@ func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			} else {
 				ne.SetText("0")
 			}
-			diceRollLabel.SetText(calculator.DiceRollText())
+			diceRollLabel.Text = calculator.DiceRollText()
+			diceRollLabel.Refresh()
 		}
 		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, l(string(attribute.Name()))})
 		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
@@ -85,7 +88,8 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 			selected = SPIRIT
 		}
 		calculator.SetCoreAttribute(selected)
-		diceRollLabel.SetText(calculator.DiceRollText())
+		diceRollLabel.Text = calculator.DiceRollText()
+		diceRollLabel.Refresh()
 		calculator.Print()
 	}
 
@@ -117,6 +121,8 @@ func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 			// Will only select if there is present in given radio
 			radio.SetSelected(selected)
 		}
+		diceRollLabel.Text = calculator.DiceRollText()
+		diceRollLabel.Refresh()
 	}
 
 	radios := []fyne.CanvasObject{}
@@ -171,7 +177,7 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	rightVBoxStack := []fyne.CanvasObject{}
 
 	widgets := [][3]fyne.CanvasObject{}
-	for _, attribute := range attributes {
+	for i, attribute := range attributes {
 		attr := attribute // Pointer magic boooo (seriously, good that I've read about it)
 		// ^ Without this setting will only work on last element
 
@@ -186,7 +192,8 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			} else {
 				ne0.SetText("0")
 			}
-			diceRollLabel.SetText(calculator.DiceRollText())
+			diceRollLabel.Text = calculator.DiceRollText()
+			diceRollLabel.Refresh()
 		}
 		ne1.OnChanged = func(s string) {
 			// TODO: Load from file
@@ -197,14 +204,12 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			} else {
 				ne1.SetText("0")
 			}
-			diceRollLabel.SetText(calculator.DiceRollText())
+			diceRollLabel.Text = calculator.DiceRollText()
+			diceRollLabel.Refresh()
 		}
 
 		widgets = append(widgets, [3]fyne.CanvasObject{l(string(attribute.Name())), ne0, ne1})
-	}
 
-	column := 0
-	for i := 0; i <= len(widgets); i++ {
 		if i%ATTRIBUTE_GROUP_SIZE == 0 && i != 0 {
 			leftVBox := container.NewVBox(leftVBoxStack...)
 			middleVBox := container.NewVBox(middleVBoxStack...)
@@ -217,15 +222,17 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			middleVBoxStack = []fyne.CanvasObject{}
 			rightVBoxStack = []fyne.CanvasObject{}
 		}
-		if i == len(widgets) {
-			break
-		}
 		leftVBoxStack = append(leftVBoxStack, widgets[i][0])
 		middleVBoxStack = append(middleVBoxStack, widgets[i][1])
 		rightVBoxStack = append(rightVBoxStack, widgets[i][2])
-		column++
-
 	}
+	leftVBox := container.NewVBox(leftVBoxStack...)
+	middleVBox := container.NewVBox(middleVBoxStack...)
+	rightVBox := container.NewVBox(rightVBoxStack...)
+
+	hboxStack := []fyne.CanvasObject{leftVBox, middleVBox, rightVBox}
+	vboxes = append(vboxes, container.NewVBox(container.NewHBox(hboxStack...)))
+
 	return vboxes
 }
 
@@ -259,10 +266,11 @@ func modifierVBox(calculator *DiceCalculator) fyne.CanvasObject {
 			calculator.modifier = 0
 		} else if intValue, err := strconv.Atoi(s); err == nil {
 			calculator.modifier = intValue
-			return
 		} else {
 			ne.SetText("0")
 		}
+		diceRollLabel.Text = calculator.DiceRollText()
+		diceRollLabel.Refresh()
 	}
 
 	return container.NewVBox(
@@ -274,12 +282,16 @@ func modifierVBox(calculator *DiceCalculator) fyne.CanvasObject {
 func main() {
 	a := app.New()
 	a.Settings().SetTheme(&MyTheme{})
+	diceRollLabel = canvas.NewText("", color.White)
 
 	w := a.NewWindow(fmt.Sprintf("%s (ver. %s)", APP_NAME, APP_VERSION))
 	w.Resize(fyne.NewSize(WINDOW_SIZE_X, WINDOW_SIZE_Y))
 
 	playerCharacter := NewCharacter("Gordo")
 	calculator := NewDiceCalculator(&playerCharacter)
+	diceRollLabel.TextSize = 24
+	diceRollLabel.Alignment = fyne.TextAlignCenter
+	diceRollLabel.Text = calculator.DiceRollText()
 
 	w.SetContent(container.NewVBox(
 		searchBar(),
