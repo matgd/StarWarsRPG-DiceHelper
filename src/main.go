@@ -20,7 +20,7 @@ import (
 
 const (
 	APP_NAME             string  = "Star Wars PRG Dice Calculator"
-	APP_VERSION          string  = "24.5.11"
+	APP_VERSION          string  = "2024.5.11"
 	WINDOW_SIZE_X        float32 = 600
 	WINDOW_SIZE_Y        float32 = 300
 	ATTRIBUTE_GROUP_SIZE int     = 6
