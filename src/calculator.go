@@ -54,5 +54,6 @@ func (dc DiceCalculator) Print() {
 }
 
 func (dc *DiceCalculator) DiceRollText() string {
-	return fmt.Sprintf(".%dd6", dc.chosenCoreAttribute.value)
+	dices := dc.chosenCoreAttribute.value + dc.modifier
+	return fmt.Sprintf(".%dd6", dices)
 }
