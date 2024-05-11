@@ -29,8 +29,18 @@ const (
 var pl LocalePL = Locale{}
 
 var diceRollLabel *canvas.Text = nil // Cannot be initialized here before fyne app works
+var chancesIndicators map[[2]int]fyne.CanvasObject = map[[2]int]fyne.CanvasObject{}
 var loadedSaveData *SaveData = nil
 var allTextToSearchThrough []*canvas.Text = []*canvas.Text{}
+
+func UpdateIndiciators(calculator *DiceCalculator) {
+	diceRollLabel.Text = calculator.DiceRollText()
+	diceRollLabel.Refresh()
+
+	for key, box := range chancesIndicators {
+		box.(*fyne.Container).Objects[1].(*widget.ProgressBar).SetValue(calculator.Chances(key[0], key[1]))
+	}
+}
 
 func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	e := widget.NewEntry
@@ -57,8 +67,7 @@ func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			} else {
 				ne.SetText("0")
 			}
-			diceRollLabel.Text = calculator.DiceRollText()
-			diceRollLabel.Refresh()
+			UpdateIndiciators(calculator)
 		}
 
 		// Load from file
@@ -97,8 +106,7 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 			selected = SPIRIT
 		}
 		calculator.SetCoreAttribute(selected)
-		diceRollLabel.Text = calculator.DiceRollText()
-		diceRollLabel.Refresh()
+		UpdateIndiciators(calculator)
 		calculator.Print()
 	}
 
@@ -134,8 +142,7 @@ func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 			// Will only select if there is present in given radio
 			radio.SetSelected(selected)
 		}
-		diceRollLabel.Text = calculator.DiceRollText()
-		diceRollLabel.Refresh()
+		UpdateIndiciators(calculator)
 	}
 
 	radios := []fyne.CanvasObject{}
@@ -198,8 +205,7 @@ func attributeVBoxes(calculator *DiceCalculator) fyne.CanvasObject {
 			} else {
 				ne0.SetText("0")
 			}
-			diceRollLabel.Text = calculator.DiceRollText()
-			diceRollLabel.Refresh()
+			UpdateIndiciators(calculator)
 		}
 		ne1.OnChanged = func(s string) {
 			// TODO: Load from file
@@ -210,8 +216,7 @@ func attributeVBoxes(calculator *DiceCalculator) fyne.CanvasObject {
 			} else {
 				ne1.SetText("0")
 			}
-			diceRollLabel.Text = calculator.DiceRollText()
-			diceRollLabel.Refresh()
+			UpdateIndiciators(calculator)
 		}
 		// Load from file
 		restoredFromFile := loadedSaveData.RestoreAttribute(attribute.Name())
@@ -250,6 +255,49 @@ func allAttributesVBox(calculator *DiceCalculator) fyne.CanvasObject {
 	)
 }
 
+func chancesSection(calculator *DiceCalculator) fyne.CanvasObject {
+	showRestOfTheSectionCheck := widget.NewCheck(pl.ShowChancesForSuccess(), func(b bool) {})
+
+	boxes := []fyne.CanvasObject{}
+	for i := 2; i <= 6; i++ {
+		pb := widget.NewProgressBar()
+		pb.SetValue(calculator.Chances(1, i))
+		t := canvas.NewText(pl.AtLeastNonMdices(i, 1), color.White)
+		t.Alignment = fyne.TextAlignCenter
+		t.Refresh()
+		box := container.NewVBox(t, pb)
+		chancesIndicators[[2]int{1, i}] = box
+		boxes = append(boxes, box)
+	}
+
+	hintText := canvas.NewText(pl.ChancesDontAccountFocus(), color.Gray16{0x8888})
+	hintText.TextStyle = fyne.TextStyle{Italic: true}
+	hintText.Alignment = fyne.TextAlignCenter
+
+	checkSection := container.NewVBox(
+		hintText,
+		container.NewGridWithColumns(
+			5,
+			boxes...,
+		),
+	)
+
+	showRestOfTheSectionCheck.OnChanged = func(b bool) {
+		if b {
+			checkSection.Show()
+		} else {
+			checkSection.Hide()
+		}
+	}
+	showRestOfTheSectionCheck.SetChecked(false)
+	checkSection.Hide()
+
+	return container.NewVBox(
+		showRestOfTheSectionCheck,
+		checkSection,
+	)
+}
+
 func modifierVBox(calculator *DiceCalculator) fyne.CanvasObject {
 	ne := widget.NewEntry()
 	ne.OnChanged = func(s string) {
@@ -260,8 +308,7 @@ func modifierVBox(calculator *DiceCalculator) fyne.CanvasObject {
 		} else {
 			ne.SetText("0")
 		}
-		diceRollLabel.Text = calculator.DiceRollText()
-		diceRollLabel.Refresh()
+		UpdateIndiciators(calculator)
 	}
 
 	return container.NewVBox(
@@ -283,7 +330,7 @@ func main() {
 	calculator := NewDiceCalculator(&playerCharacter)
 	diceRollLabel.TextSize = 24
 	diceRollLabel.Alignment = fyne.TextAlignCenter
-	diceRollLabel.Text = calculator.DiceRollText()
+	UpdateIndiciators(&calculator)
 
 	saveButton := widget.NewButton(pl.Save(), func() {
 		if err := SaveToFile(&calculator); err == nil {
@@ -312,6 +359,8 @@ func main() {
 		),
 		widget.NewSeparator(),
 		diceRollLabel,
+		widget.NewSeparator(),
+		chancesSection(&calculator),
 	))
 
 	search.OnChanged = func(s string) {

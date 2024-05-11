@@ -18,15 +18,15 @@ At least one die >= X
 
 Example:
 
-At least one 6 from 3 dices  
+At least one 6 from 3 dies 
 1 - (5/6 * 5/6 * 5/6) = 1 - 125/216 = 91/216 ~ 42%  
 
-At least one 5 from 4 dices  
+At least one 5 from 4 dies  
 1 - (4/6 * 4/6 * 4/6 * 4/6) = 1 - 8/27 = 19/27 ~ 70%  
 
-TODO: Explore more with at least N from M dices  
+TODO: Explore more with at least N from M dies  
 
-At least 2 6s from 3 dices  
+At least 2 6s from 3 dies  
 
 1 minus  
 0 6s (5/6 * 5/6 * 5/6) = 125/216  
@@ -38,7 +38,7 @@ At least 2 6s from 3 dices
 1 - 200/216 = 16/216 ~ 7.4%  
 
 
-At least 2 6s from 4 dices
+At least 2 6s from 4 dies
 1 minus
 0 6s (5/6 * 5/6 * 5/6 * 5/6) = 625/1296
 
@@ -50,7 +50,7 @@ At least 2 6s from 4 dices
 
 1 - 1125/1296 = 171/1296 ~ 13.2%  
 
-At least 2 5s from 4 dices  
+At least 2 5s from 4 dies
 1 minus  
 0 5s (4/6 * 4/6 * 4/6 * 4/6) = 256/1296  
 

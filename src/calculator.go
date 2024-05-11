@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 )
 
 type DiceCalculator struct {
@@ -53,12 +54,32 @@ func (dc DiceCalculator) Print() {
 	fmt.Println(dc.String())
 }
 
+func (dc DiceCalculator) dies() int {
+	availableDies := dc.chosenCoreAttribute.Value()
+	availableDies += dc.chosenAttribute.Proficiency()
+	availableDies += dc.modifier
+	return availableDies
+}
+
+// Chances returns the probability of rolling at least greaterEqual successes with available dies
+func (dc DiceCalculator) Chances(successDies, greaterEqual int) float64 {
+	dies := float64(dc.dies())
+	ge := float64(greaterEqual)
+
+	universe := 1.0
+	failThrowChance := 1.0 - ((7.0 - ge) / 6.0)
+	possibilityOf0Success := math.Pow(failThrowChance, dies)
+	if successDies == 1 {
+		return universe - possibilityOf0Success
+	}
+	return 0
+}
+
+func (dc DiceCalculator) FormattedChances(successDies, greaterEqual int) string {
+	return fmt.Sprintf("%.2f%%", dc.Chances(successDies, greaterEqual)*100)
+}
+
 func (dc *DiceCalculator) DiceRollText() string {
-	dices := dc.chosenCoreAttribute.Value()
-	dices += dc.chosenAttribute.Proficiency()
-	dices += dc.modifier
-
 	focus := dc.chosenAttribute.Focus()
-
-	return fmt.Sprintf(".%dd6 + %df", dices, focus)
+	return fmt.Sprintf(".%dd6 + %df", dc.dies(), focus)
 }
