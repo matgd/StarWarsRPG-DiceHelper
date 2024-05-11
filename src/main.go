@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -143,7 +144,7 @@ func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 
 }
 
-func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
+func attributeVBoxes(calculator *DiceCalculator) fyne.CanvasObject {
 	t := canvas.NewText
 	e := widget.NewEntry
 	playerCharacter := calculator.character
@@ -178,14 +179,8 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 		&playerCharacter.attributes.agility,
 	}
 
-	vboxes := []fyne.CanvasObject{}
-
-	leftVBoxStack := []fyne.CanvasObject{}
-	middleVBoxStack := []fyne.CanvasObject{}
-	rightVBoxStack := []fyne.CanvasObject{}
-
-	widgets := [][3]fyne.CanvasObject{}
-	for i, attribute := range attributes {
+	triplets := []fyne.CanvasObject{}
+	for _, attribute := range attributes {
 		attr := attribute // Pointer magic boooo (seriously, good that I've read about it)
 		// ^ Without this setting will only work on last element
 
@@ -222,32 +217,11 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 		text := t(string(attribute.Name()), color.White)
 		allTextToSearchThrough = append(allTextToSearchThrough, text)
 
-		widgets = append(widgets, [3]fyne.CanvasObject{text, ne0, ne1})
+		triplets = append(triplets, container.NewHBox(text, layout.NewSpacer(), ne0, ne1))
 
-		if i%ATTRIBUTE_GROUP_SIZE == 0 && i != 0 {
-			leftVBox := container.NewVBox(leftVBoxStack...)
-			middleVBox := container.NewVBox(middleVBoxStack...)
-			rightVBox := container.NewVBox(rightVBoxStack...)
-
-			hboxStack := []fyne.CanvasObject{leftVBox, middleVBox, rightVBox}
-			vboxes = append(vboxes, container.NewVBox(container.NewHBox(hboxStack...)))
-
-			leftVBoxStack = []fyne.CanvasObject{}
-			middleVBoxStack = []fyne.CanvasObject{}
-			rightVBoxStack = []fyne.CanvasObject{}
-		}
-		leftVBoxStack = append(leftVBoxStack, widgets[i][0])
-		middleVBoxStack = append(middleVBoxStack, widgets[i][1])
-		rightVBoxStack = append(rightVBoxStack, widgets[i][2])
 	}
-	leftVBox := container.NewVBox(leftVBoxStack...)
-	middleVBox := container.NewVBox(middleVBoxStack...)
-	rightVBox := container.NewVBox(rightVBoxStack...)
-
-	hboxStack := []fyne.CanvasObject{leftVBox, middleVBox, rightVBox}
-	vboxes = append(vboxes, container.NewVBox(container.NewHBox(hboxStack...)))
-
-	return vboxes
+	cont := container.NewGridWithColumns(4, triplets...)
+	return cont
 }
 
 func searchBar() *widget.Entry {
@@ -257,16 +231,16 @@ func searchBar() *widget.Entry {
 }
 
 func coreAttributeVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.CanvasObject {
-	upperLeft := []fyne.CanvasObject{}
-	upperLeft = append(upperLeft, coreAttributeHBoxes(calculator)...)
+	coreAttrVBox := []fyne.CanvasObject{}
+	coreAttrVBox = append(coreAttrVBox, coreAttributeHBoxes(calculator)...)
 	return container.NewVBox(
-		upperLeft...,
+		coreAttrVBox...,
 	)
 }
 
 func allAttributesVBox(calculator *DiceCalculator) fyne.CanvasObject {
 	allAttributeVBox := []fyne.CanvasObject{}
-	allAttributeVBox = append(allAttributeVBox, attributeVBoxes(calculator)...)
+	allAttributeVBox = append(allAttributeVBox, attributeVBoxes(calculator))
 	return container.NewHBox(
 		allAttributeVBox...,
 	)
