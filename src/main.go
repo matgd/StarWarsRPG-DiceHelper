@@ -220,7 +220,7 @@ func attributeVBoxes(calculator *DiceCalculator) fyne.CanvasObject {
 		triplets = append(triplets, container.NewHBox(text, layout.NewSpacer(), ne0, ne1))
 
 	}
-	cont := container.NewGridWithColumns(4, triplets...)
+	cont := container.NewGridWithRows(6, triplets...)
 	return cont
 }
 
