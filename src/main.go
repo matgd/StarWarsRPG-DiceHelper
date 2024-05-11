@@ -34,8 +34,9 @@ func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 		&playerCharacter.coreAttributes.spirit,
 	}
 
+	hboxes := []fyne.CanvasObject{}
 	widgetPairs := [][2]fyne.CanvasObject{}
-	for _, attribute := range attributes {
+	for i, attribute := range attributes {
 		attr := attribute // Pointer magic boooo (seriously, good that I've read about it)
 
 		ne := e()
@@ -56,12 +57,9 @@ func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 			ne.SetText("0")
 		}
 		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, l(string(attribute.Name()))})
-	}
-
-	hboxes := []fyne.CanvasObject{}
-	for i := 0; i < len(widgetPairs); i++ {
 		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
 	}
+
 	return hboxes
 }
 
