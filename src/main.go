@@ -24,9 +24,12 @@ const (
 
 var pl LocalePL = Locale{}
 
-func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
+var diceRollLabel = widget.NewLabel("")
+
+func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	e := widget.NewEntry
 	l := widget.NewLabel
+	playerCharacter := calculator.character
 
 	attributes := []*CoreAttribute{
 		&playerCharacter.coreAttributes.body,
@@ -43,19 +46,14 @@ func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 		ne := e()
 		ne.OnChanged = func(s string) {
 			// TODO: Load from file
-			if s == "" {
+			if s == "" || s == "-" {
 				attr.SetValue(0)
-				return
-			}
-			if intValue, err := strconv.Atoi(s); err == nil {
+			} else if intValue, err := strconv.Atoi(s); err == nil {
 				attr.SetValue(intValue)
-				return
+			} else {
+				ne.SetText("0")
 			}
-			if s == "-" {
-				attr.SetValue(0)
-				return
-			}
-			ne.SetText("0")
+			diceRollLabel.SetText(calculator.DiceRollText())
 		}
 		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, l(string(attribute.Name()))})
 		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
@@ -87,6 +85,7 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 			selected = SPIRIT
 		}
 		calculator.SetCoreAttribute(selected)
+		diceRollLabel.SetText(calculator.DiceRollText())
 		calculator.Print()
 	}
 
@@ -95,7 +94,6 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 
 func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 	radioChoices := PlAttributeNames()
-	selected := ""
 	radioPointers := []*widget.RadioGroup{
 		widget.NewRadioGroup(radioChoices[:6], func(s string) {}),
 		widget.NewRadioGroup(radioChoices[6:12], func(s string) {}),
@@ -103,22 +101,21 @@ func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 		widget.NewRadioGroup(radioChoices[18:], func(s string) {}),
 	}
 	// Default choice
-	radioPointers[0].Selected = radioChoices[0]
+	selected := radioChoices[0]
+	radioPointers[0].SetSelected(selected)
 
 	selectFunc := func(s string) {
-		if s == "" {
-			// Prevent from unselecting and passing empty string to calculator set
-			return
+		if s != "" {
+			// Prevent from passing empty string to calculator set
+			selected = s
 		}
-		selected = s
-		calculator.SetAttributeByPlName(s)
+		calculator.SetAttributeByPlName(selected)
 		calculator.Print()
 
 		for _, radio := range radioPointers {
-			if radio.Selected != selected {
-				radio.Selected = ""
-				radio.Refresh()
-			}
+			// Prevents from unselecting
+			// Will only select if there is present in given radio
+			radio.SetSelected(selected)
 		}
 	}
 
@@ -207,7 +204,7 @@ func searchBar() fyne.CanvasObject {
 
 func upperLeftVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.CanvasObject {
 	upperLeft := []fyne.CanvasObject{}
-	upperLeft = append(upperLeft, coreAttributeHBoxes(playerCharacter)...)
+	upperLeft = append(upperLeft, coreAttributeHBoxes(calculator)...)
 	return container.NewVBox(
 		upperLeft...,
 	)
@@ -224,23 +221,14 @@ func upperRightVBox(playerCharacter *Character) fyne.CanvasObject {
 func modifierVBox(calculator *DiceCalculator) fyne.CanvasObject {
 	ne := widget.NewEntry()
 	ne.OnChanged = func(s string) {
-		if s == "" {
+		if s == "" || s == "-" {
 			calculator.modifier = 0
-			return
-		}
-
-		if intValue, err := strconv.Atoi(s); err == nil {
-			fmt.Println(intValue)
+		} else if intValue, err := strconv.Atoi(s); err == nil {
 			calculator.modifier = intValue
 			return
+		} else {
+			ne.SetText("0")
 		}
-
-		if s == "-" {
-			calculator.modifier = 0
-			return
-		}
-
-		ne.SetText("0")
 	}
 
 	return container.NewVBox(
@@ -275,6 +263,8 @@ func main() {
 			widget.NewSeparator(),
 			modifierVBox(&calculator),
 		),
+		widget.NewSeparator(),
+		diceRollLabel,
 	))
 
 	w.ShowAndRun()

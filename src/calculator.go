@@ -52,3 +52,7 @@ func (dc DiceCalculator) Print() {
 	fmt.Println("\nDice Calculator:")
 	fmt.Println(dc.String())
 }
+
+func (dc *DiceCalculator) DiceRollText() string {
+	return fmt.Sprintf(".%dd6", dc.chosenCoreAttribute.value)
+}
