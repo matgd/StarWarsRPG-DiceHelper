@@ -9,7 +9,7 @@ import (
 type SaveData struct {
 	CharacterName  string                    `json:"characterName"`
 	CoreAttributes map[CoreAttributeName]int `json:"coreAttributes"`
-	Attributes     map[string]int            `json:"attributes"`
+	Attributes     map[string][2]int         `json:"attributes"`
 }
 
 const FILE_NAME string = "calculatorData.json"
@@ -28,12 +28,46 @@ func SaveToFile(calculator *DiceCalculator) error {
 		MIND:   calculator.character.coreAttributes.mind.Value(),
 		SPIRIT: calculator.character.coreAttributes.spirit.Value(),
 	}
-	attributes := map[string]int{}
+
+	attributes := []*Attribute{
+		&calculator.character.attributes.athletics,
+		&calculator.character.attributes.vigilance,
+		&calculator.character.attributes.determination,
+		&calculator.character.attributes.fortidude,
+		&calculator.character.attributes.intuition,
+		&calculator.character.attributes.strength,
+
+		&calculator.character.attributes.medics,
+		&calculator.character.attributes.taming,
+		&calculator.character.attributes.religiousness,
+		&calculator.character.attributes.cunning,
+		&calculator.character.attributes.survival,
+		&calculator.character.attributes.reflexes,
+
+		&calculator.character.attributes.craftmanship,
+		&calculator.character.attributes.stealth,
+		&calculator.character.attributes.force,
+		&calculator.character.attributes.theology,
+		&calculator.character.attributes.ranged,
+		&calculator.character.attributes.melee,
+
+		&calculator.character.attributes.knowledge,
+		&calculator.character.attributes.secretKnowledge,
+		&calculator.character.attributes.natureKnowledge,
+		&calculator.character.attributes.entartainment,
+		&calculator.character.attributes.intimidation,
+		&calculator.character.attributes.agility,
+	}
+
+	attributesToSave := make(map[string][2]int)
+	for _, attribute := range attributes {
+		attributesToSave[attribute.Name()] = [2]int{attribute.Proficiency(), attribute.Focus()}
+	}
 
 	fileData := SaveData{
 		CharacterName:  characterName,
 		CoreAttributes: coreAttributes,
-		Attributes:     attributes,
+		Attributes:     attributesToSave,
 	}
 
 	if written, err := json.Marshal(fileData); err == nil {
@@ -68,4 +102,11 @@ func (sd SaveData) RestoreCoreAttribute(name CoreAttributeName) int {
 		return value
 	}
 	return 0
+}
+
+func (sd SaveData) RestoreAttribute(name string) [2]int {
+	if value, ok := sd.Attributes[name]; ok {
+		return value
+	}
+	return [2]int{0, 0}
 }

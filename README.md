@@ -2,13 +2,13 @@
 
 TODO:
 
-- [X] Focus for non-core attributes
 - [ ] Search bar
-- [ ] Save to CSV
-- [ ] Reload from CSV
+- [ ] Show chances of getting result (maybe dropdown?)
 - [X] Add modifier
+- [X] Focus for non-core attributes
+- [X] Reload from JSON
+- [X] Save to JSON
 - [X] Show what to write in discord bot
-- [ ] Show chances of getting result 
 
 
 ## Show chances of getting result 

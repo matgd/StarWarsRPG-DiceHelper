@@ -212,6 +212,10 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 			diceRollLabel.Text = calculator.DiceRollText()
 			diceRollLabel.Refresh()
 		}
+		// Load from file
+		restoredFromFile := loadedSaveData.RestoreAttribute(attribute.Name())
+		ne1.SetText(fmt.Sprint(restoredFromFile[0]))
+		ne0.SetText(fmt.Sprint(restoredFromFile[1]))
 
 		widgets = append(widgets, [3]fyne.CanvasObject{l(string(attribute.Name())), ne0, ne1})
 
