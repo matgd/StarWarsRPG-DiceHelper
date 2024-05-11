@@ -5,6 +5,9 @@ package main
 // go run main.go
 
 import (
+	"fmt"
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -13,16 +16,21 @@ import (
 
 const (
 	APP_NAME             string  = "Star Wars PRG Dice Calculator"
+	APP_VERSION          string  = "24.5.11"
 	WINDOW_SIZE_X        float32 = 600
 	WINDOW_SIZE_Y        float32 = 300
 	ATTRIBUTE_GROUP_SIZE int     = 6
 )
 
+var pl LocalePL = Locale{}
+
 func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
+	e := widget.NewEntry
+	l := widget.NewLabel
 	widgetPairs := [][2]fyne.CanvasObject{
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.body.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.mind.Name()))},
-		{widget.NewEntry(), widget.NewLabel(string(playerCharacter.coreAttributes.spirit.Name()))},
+		{e(), l(string(playerCharacter.coreAttributes.body.Name()))},
+		{e(), l(string(playerCharacter.coreAttributes.mind.Name()))},
+		{e(), l(string(playerCharacter.coreAttributes.spirit.Name()))},
 	}
 
 	hboxes := []fyne.CanvasObject{}
@@ -34,19 +42,70 @@ func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 
 func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 	radioChoices := []string{string(BODY), string(MIND), string(SPIRIT)}
-	coreAttributeRadio := widget.NewRadioGroup(radioChoices, func(s string) {
+	radio := widget.NewRadioGroup(radioChoices, func(s string) {})
+	var selected CoreAttributeName = BODY
+
+	// Default choice
+	radio.SetSelected(string(selected))
+
+	radio.OnChanged = func(s string) {
+		if s == "" {
+			// Prevent from unselecting
+			radio.SetSelected(string(selected))
+			return
+		}
 		switch CoreAttributeName(s) {
 		case BODY:
-			calculator.SetCoreAttribute(BODY)
+			selected = BODY
 		case MIND:
-			calculator.SetCoreAttribute(MIND)
+			selected = MIND
 		case SPIRIT:
-			calculator.SetCoreAttribute(SPIRIT)
+			selected = SPIRIT
 		}
+		calculator.SetCoreAttribute(selected)
 		calculator.Print()
-	})
+	}
 
-	return coreAttributeRadio
+	return radio
+}
+
+func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
+	radioChoices := PlAttributeNames()
+	selected := ""
+	radioPointers := []*widget.RadioGroup{
+		widget.NewRadioGroup(radioChoices[:6], func(s string) {}),
+		widget.NewRadioGroup(radioChoices[6:12], func(s string) {}),
+		widget.NewRadioGroup(radioChoices[12:18], func(s string) {}),
+		widget.NewRadioGroup(radioChoices[18:], func(s string) {}),
+	}
+	// Default choice
+	radioPointers[0].Selected = radioChoices[0]
+
+	selectFunc := func(s string) {
+		if s == "" {
+			// Prevent from unselecting and passing empty string to calculator set
+			return
+		}
+		selected = s
+		calculator.SetAttributeByPlName(s)
+		calculator.Print()
+
+		for _, radio := range radioPointers {
+			if radio.Selected != selected {
+				radio.Selected = ""
+				radio.Refresh()
+			}
+		}
+	}
+
+	radios := []fyne.CanvasObject{}
+	for _, radio := range radioPointers {
+		radio.OnChanged = selectFunc
+		radios = append(radios, radio)
+	}
+
+	return container.NewHBox(radios...)
+
 }
 
 func attributeVBoxes(playerCharacter *Character) []fyne.CanvasObject {
@@ -117,7 +176,7 @@ func attributeVBoxes(playerCharacter *Character) []fyne.CanvasObject {
 
 func searchBar() fyne.CanvasObject {
 	w := widget.NewEntry()
-	w.SetPlaceHolder("Filtruj...")
+	w.SetPlaceHolder(pl.Filter3Dots())
 	// TODO: Center
 	return w
 }
@@ -138,12 +197,39 @@ func upperRightVBox(playerCharacter *Character) fyne.CanvasObject {
 	)
 }
 
+func modifierVBox(calculator *DiceCalculator) fyne.CanvasObject {
+	ne := widget.NewEntry()
+	ne.OnChanged = func(s string) {
+		if s == "" {
+			calculator.modifier = 0
+			return
+		}
+
+		if intValue, err := strconv.Atoi(s); err == nil {
+			fmt.Println(intValue)
+			calculator.modifier = intValue
+			return
+		}
+
+		if s == "-" {
+			calculator.modifier = 0
+			return
+		}
+
+		ne.SetText("0")
+	}
+
+	return container.NewVBox(
+		widget.NewLabel(pl.DodatkoweKosci()),
+		ne,
+	)
+}
+
 func main() {
 	a := app.New()
 	a.Settings().SetTheme(&MyTheme{})
-	pl := Locale{}
 
-	w := a.NewWindow(APP_NAME)
+	w := a.NewWindow(fmt.Sprintf("%s (ver. %s)", APP_NAME, APP_VERSION))
 	w.Resize(fyne.NewSize(WINDOW_SIZE_X, WINDOW_SIZE_Y))
 
 	playerCharacter := NewCharacter("Gordo")
@@ -161,6 +247,9 @@ func main() {
 		container.NewHBox(
 			calculatorCoreAttributeRadio(&calculator),
 			widget.NewSeparator(),
+			calculatorAttributeRadio(&calculator),
+			widget.NewSeparator(),
+			modifierVBox(&calculator),
 		),
 	))
 

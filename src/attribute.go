@@ -14,6 +14,14 @@ func (a Attribute) Proficiency() int {
 	return a.proficiency
 }
 
+func (a *Attribute) SetProficiency(value int) {
+	a.proficiency = value
+}
+
 func (a Attribute) Focus() int {
 	return a.focus
+}
+
+func (a *Attribute) SetFocus(value int) {
+	a.focus = value
 }

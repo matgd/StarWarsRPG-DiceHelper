@@ -109,3 +109,68 @@ func (c Character) Print() {
 	fmt.Println(c.coreAttributes)
 	fmt.Println(c.attributes)
 }
+
+func (c Character) PlAttributeNamesMap() map[string]*Attribute {
+	m := map[string]*Attribute{
+		"Atletyka":     &c.attributes.athletics,
+		"Czujność":     &c.attributes.vigilance,
+		"Determinacja": &c.attributes.determination,
+		"Hart":         &c.attributes.fortidude,
+		"Intuicja":     &c.attributes.intuition,
+		"Krzepa":       &c.attributes.strength,
+
+		"Medycyna":      &c.attributes.medics,
+		"Obłaskawianie": &c.attributes.taming,
+		"Pobożność":     &c.attributes.religiousness,
+		"Przebiegłość":  &c.attributes.cunning,
+		"Przetrwanie":   &c.attributes.survival,
+		"Refleks":       &c.attributes.reflexes,
+
+		"Rzemiosło":        &c.attributes.craftmanship,
+		"Skradanie":        &c.attributes.stealth,
+		"Moc":              &c.attributes.force,
+		"Teologia":         &c.attributes.theology,
+		"Walka dystansowa": &c.attributes.ranged,
+		"Walka wręcz":      &c.attributes.melee,
+
+		"Wiedza":              &c.attributes.knowledge,
+		"Wiedza tajemna":      &c.attributes.secretKnowledge,
+		"Wiedza o przyrodzie": &c.attributes.natureKnowledge,
+		"Zabawianie":          &c.attributes.entartainment,
+		"Zastraszanie":        &c.attributes.intimidation,
+		"Zręczność":           &c.attributes.agility,
+	}
+	return m
+}
+
+func PlAttributeNames() []string {
+	return []string{
+		"Atletyka",
+		"Czujność",
+		"Determinacja",
+		"Hart",
+		"Intuicja",
+		"Krzepa",
+
+		"Medycyna",
+		"Obłaskawianie",
+		"Pobożność",
+		"Przebiegłość",
+		"Przetrwanie",
+		"Refleks",
+
+		"Rzemiosło",
+		"Skradanie",
+		"Moc",
+		"Teologia",
+		"Walka dystansowa",
+		"Walka wręcz",
+
+		"Wiedza",
+		"Wiedza tajemna",
+		"Wiedza o przyrodzie",
+		"Zabawianie",
+		"Zastraszanie",
+		"Zręczność",
+	}
+}

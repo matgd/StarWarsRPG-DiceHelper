@@ -20,3 +20,7 @@ func (ca CoreAttribute) Name() CoreAttributeName {
 func (ca CoreAttribute) Value() int {
 	return ca.value
 }
+
+func (ca *CoreAttribute) SetValue(value int) {
+	ca.value = value
+}

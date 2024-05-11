@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 type DiceCalculator struct {
 	character           *Character
@@ -28,11 +31,20 @@ func (dc *DiceCalculator) SetCoreAttribute(attributeName CoreAttributeName) {
 		dc.chosenCoreAttribute = &dc.character.coreAttributes.spirit
 	}
 }
+
+func (dc *DiceCalculator) SetAttributeByPlName(attributeName string) {
+	if chosenAttribute, ok := dc.character.PlAttributeNamesMap()[attributeName]; ok {
+		dc.chosenAttribute = chosenAttribute
+		return
+	}
+	log.Fatalf("Attribute with name %v not found", attributeName)
+}
+
 func (dc DiceCalculator) String() string {
 	return fmt.Sprintf("Character: %v\nChosen Core Attribute: %v\nChosen Attribute: %v\nModifier: %d",
 		dc.character.Name(),
-		dc.chosenCoreAttribute.Name(),
-		dc.chosenAttribute.Name(),
+		dc.chosenCoreAttribute,
+		dc.chosenAttribute,
 		dc.modifier)
 }
 
