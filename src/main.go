@@ -38,6 +38,7 @@ func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 	widgetPairs := [][2]fyne.CanvasObject{}
 	for i, attribute := range attributes {
 		attr := attribute // Pointer magic boooo (seriously, good that I've read about it)
+		// ^ Without this setting will only work on last element
 
 		ne := e()
 		ne.OnChanged = func(s string) {
