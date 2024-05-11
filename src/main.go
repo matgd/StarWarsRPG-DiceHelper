@@ -259,15 +259,18 @@ func chancesSection(calculator *DiceCalculator) fyne.CanvasObject {
 	showRestOfTheSectionCheck := widget.NewCheck(pl.ShowChancesForSuccess(), func(b bool) {})
 
 	boxes := []fyne.CanvasObject{}
-	for i := 2; i <= 6; i++ {
-		pb := widget.NewProgressBar()
-		pb.SetValue(calculator.Chances(1, i))
-		t := canvas.NewText(pl.AtLeastNonMdices(i, 1), color.White)
-		t.Alignment = fyne.TextAlignCenter
-		t.Refresh()
-		box := container.NewVBox(t, pb)
-		chancesIndicators[[2]int{1, i}] = box
-		boxes = append(boxes, box)
+
+	for i := 1; i <= 2; i++ {
+		for j := 2; j <= 6; j++ {
+			pb := widget.NewProgressBar()
+			pb.SetValue(calculator.Chances(i, j))
+			t := canvas.NewText(pl.AtLeastNonMdices(j, i), color.White)
+			t.Alignment = fyne.TextAlignCenter
+			t.Refresh()
+			box := container.NewVBox(t, pb)
+			chancesIndicators[[2]int{i, j}] = box
+			boxes = append(boxes, box)
+		}
 	}
 
 	hintText := canvas.NewText(pl.ChancesDontAccountFocus(), color.Gray16{0x8888})
