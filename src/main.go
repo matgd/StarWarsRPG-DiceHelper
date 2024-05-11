@@ -27,10 +27,35 @@ var pl LocalePL = Locale{}
 func coreAttributeHBoxes(playerCharacter *Character) []fyne.CanvasObject {
 	e := widget.NewEntry
 	l := widget.NewLabel
-	widgetPairs := [][2]fyne.CanvasObject{
-		{e(), l(string(playerCharacter.coreAttributes.body.Name()))},
-		{e(), l(string(playerCharacter.coreAttributes.mind.Name()))},
-		{e(), l(string(playerCharacter.coreAttributes.spirit.Name()))},
+
+	attributes := []*CoreAttribute{
+		&playerCharacter.coreAttributes.body,
+		&playerCharacter.coreAttributes.mind,
+		&playerCharacter.coreAttributes.spirit,
+	}
+
+	widgetPairs := [][2]fyne.CanvasObject{}
+	for _, attribute := range attributes {
+		attr := attribute // Pointer magic boooo (seriously, good that I've read about it)
+
+		ne := e()
+		ne.OnChanged = func(s string) {
+			// TODO: Load from file
+			if s == "" {
+				attr.SetValue(0)
+				return
+			}
+			if intValue, err := strconv.Atoi(s); err == nil {
+				attr.SetValue(intValue)
+				return
+			}
+			if s == "-" {
+				attr.SetValue(0)
+				return
+			}
+			ne.SetText("0")
+		}
+		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, l(string(attribute.Name()))})
 	}
 
 	hboxes := []fyne.CanvasObject{}
