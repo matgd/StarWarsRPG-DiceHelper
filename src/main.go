@@ -29,6 +29,7 @@ var pl LocalePL = Locale{}
 
 var diceRollLabel *canvas.Text = nil // Cannot be initialized here before fyne app works
 var loadedSaveData *SaveData = nil
+var allLabelsToSearchThrough []*widget.Label = []*widget.Label{}
 
 func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	e := widget.NewEntry
@@ -63,7 +64,10 @@ func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 		// Load from file
 		ne.SetText(fmt.Sprint(loadedSaveData.RestoreCoreAttribute(attribute.Name())))
 
-		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, l(string(attribute.Name()))})
+		label := l(string(attribute.Name()))
+
+		allLabelsToSearchThrough = append(allLabelsToSearchThrough, label)
+		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, label})
 		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
 	}
 
@@ -245,14 +249,13 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	return vboxes
 }
 
-func searchBar() fyne.CanvasObject {
+func searchBar() *widget.Entry {
 	w := widget.NewEntry()
 	w.SetPlaceHolder(pl.Filter3Dots())
-	// TODO: Center
 	return w
 }
 
-func upperLeftVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.CanvasObject {
+func coreAttributeVBox(playerCharacter *Character, calculator *DiceCalculator) fyne.CanvasObject {
 	upperLeft := []fyne.CanvasObject{}
 	upperLeft = append(upperLeft, coreAttributeHBoxes(calculator)...)
 	return container.NewVBox(
@@ -293,7 +296,6 @@ func main() {
 	a.Settings().SetTheme(&MyTheme{})
 	diceRollLabel = canvas.NewText("", color.White)
 	loadedSaveData, _ = LoadFromFile()
-	fmt.Println(loadedSaveData)
 
 	w := a.NewWindow(fmt.Sprintf("%s (ver. %s)", APP_NAME, APP_VERSION))
 	w.Resize(fyne.NewSize(WINDOW_SIZE_X, WINDOW_SIZE_Y))
@@ -311,11 +313,12 @@ func main() {
 			dialog.ShowError(err, w)
 		}
 	})
+	search := searchBar()
 
 	w.SetContent(container.NewVBox(
-		searchBar(),
+		search,
 		container.NewHBox(
-			container.NewVBox(upperLeftVBox(&playerCharacter, &calculator)),
+			coreAttributeVBox(&playerCharacter, &calculator),
 			widget.NewSeparator(),
 			container.NewVBox(upperRightVBox(&calculator)),
 		),
@@ -331,6 +334,10 @@ func main() {
 		widget.NewSeparator(),
 		diceRollLabel,
 	))
+
+	search.OnChanged = func(s string) {
+		HighlightSearched(s, allLabelsToSearchThrough...)
+	}
 
 	w.ShowAndRun()
 }
