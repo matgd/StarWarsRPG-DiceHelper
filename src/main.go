@@ -29,11 +29,10 @@ var pl LocalePL = Locale{}
 
 var diceRollLabel *canvas.Text = nil // Cannot be initialized here before fyne app works
 var loadedSaveData *SaveData = nil
-var allLabelsToSearchThrough []*widget.Label = []*widget.Label{}
+var allTextToSearchThrough []*canvas.Text = []*canvas.Text{}
 
 func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 	e := widget.NewEntry
-	l := widget.NewLabel
 	playerCharacter := calculator.character
 
 	attributes := []*CoreAttribute{
@@ -64,10 +63,10 @@ func coreAttributeHBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 		// Load from file
 		ne.SetText(fmt.Sprint(loadedSaveData.RestoreCoreAttribute(attribute.Name())))
 
-		label := l(string(attribute.Name()))
+		text := canvas.NewText(string(attribute.Name()), color.White)
+		allTextToSearchThrough = append(allTextToSearchThrough, text)
 
-		allLabelsToSearchThrough = append(allLabelsToSearchThrough, label)
-		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, label})
+		widgetPairs = append(widgetPairs, [2]fyne.CanvasObject{ne, text})
 		hboxes = append(hboxes, container.NewHBox(widgetPairs[i][0], widgetPairs[i][1]))
 	}
 
@@ -145,7 +144,7 @@ func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 }
 
 func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
-	l := widget.NewLabel
+	t := canvas.NewText
 	e := widget.NewEntry
 	playerCharacter := calculator.character
 
@@ -193,7 +192,6 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 		ne0 := e()
 		ne1 := e()
 		ne0.OnChanged = func(s string) {
-			// TODO: Load from file
 			if s == "" || s == "-" {
 				attr.SetProficiency(0)
 			} else if intValue, err := strconv.Atoi(s); err == nil {
@@ -221,7 +219,10 @@ func attributeVBoxes(calculator *DiceCalculator) []fyne.CanvasObject {
 		ne1.SetText(fmt.Sprint(restoredFromFile[0]))
 		ne0.SetText(fmt.Sprint(restoredFromFile[1]))
 
-		widgets = append(widgets, [3]fyne.CanvasObject{l(string(attribute.Name())), ne0, ne1})
+		text := t(string(attribute.Name()), color.White)
+		allTextToSearchThrough = append(allTextToSearchThrough, text)
+
+		widgets = append(widgets, [3]fyne.CanvasObject{text, ne0, ne1})
 
 		if i%ATTRIBUTE_GROUP_SIZE == 0 && i != 0 {
 			leftVBox := container.NewVBox(leftVBoxStack...)
@@ -263,11 +264,11 @@ func coreAttributeVBox(playerCharacter *Character, calculator *DiceCalculator) f
 	)
 }
 
-func upperRightVBox(calculator *DiceCalculator) fyne.CanvasObject {
-	upperRight := []fyne.CanvasObject{}
-	upperRight = append(upperRight, attributeVBoxes(calculator)...)
+func allAttributesVBox(calculator *DiceCalculator) fyne.CanvasObject {
+	allAttributeVBox := []fyne.CanvasObject{}
+	allAttributeVBox = append(allAttributeVBox, attributeVBoxes(calculator)...)
 	return container.NewHBox(
-		upperRight...,
+		allAttributeVBox...,
 	)
 }
 
@@ -320,7 +321,7 @@ func main() {
 		container.NewHBox(
 			coreAttributeVBox(&playerCharacter, &calculator),
 			widget.NewSeparator(),
-			container.NewVBox(upperRightVBox(&calculator)),
+			container.NewVBox(allAttributesVBox(&calculator)),
 		),
 		saveButton,
 		widget.NewSeparator(),
@@ -336,7 +337,7 @@ func main() {
 	))
 
 	search.OnChanged = func(s string) {
-		HighlightSearched(s, allLabelsToSearchThrough...)
+		HighlightSearched(s, allTextToSearchThrough...)
 	}
 
 	w.ShowAndRun()

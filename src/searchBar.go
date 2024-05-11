@@ -2,28 +2,28 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"strings"
 
-	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/canvas"
 )
 
-func HighlightSearched(query string, labels ...*widget.Label) {
+func HighlightSearched(query string, textObjs ...*canvas.Text) {
 	if query == "" {
-		for _, label := range labels {
-			label.Show()
+		for _, text := range textObjs {
+			text.Color = color.White
+			text.Refresh()
 		}
 		return
 	}
-	for _, label := range labels {
-		if strings.Contains(strings.ToLower(label.Text), strings.ToLower(query)) {
-			fmt.Println(">>>", query, "TEXT: ", label.Text)
-			label.Show()
-			// obj.TextStyle.Bold = true
-			// obj.Refresh()
+	for _, text := range textObjs {
+		if strings.Contains(strings.ToLower(text.Text), strings.ToLower(query)) {
+			text.Color = color.White
+			text.Refresh()
+			fmt.Println(query, "->", text.Text)
 		} else {
-			// obj.TextStyle.Bold = false
-			// obj.Refresh()
-			label.Hide()
+			text.Color = color.Gray16{0x3333}
+			text.Refresh()
 		}
 	}
 }
