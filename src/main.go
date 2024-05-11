@@ -107,6 +107,10 @@ func calculatorCoreAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject 
 
 func calculatorAttributeRadio(calculator *DiceCalculator) fyne.CanvasObject {
 	radioChoices := PlAttributeNames()
+
+	// I know, I know
+	// This should be probably specific layout instead of this hacky way
+	// But I'm doing this for fun and I don't care about maintanence that much
 	radioPointers := []*widget.RadioGroup{
 		widget.NewRadioGroup(radioChoices[:6], func(s string) {}),
 		widget.NewRadioGroup(radioChoices[6:12], func(s string) {}),
