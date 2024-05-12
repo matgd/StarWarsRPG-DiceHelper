@@ -32,7 +32,7 @@ func (m MyTheme) Font(style fyne.TextStyle) fyne.Resource {
 
 func (m MyTheme) Size(name fyne.ThemeSizeName) float32 {
 	sizeMapping := map[fyne.ThemeSizeName]float32{
-		// "text":    18,
+		// "text":    18,  // TODO: Account scalling on Linux/Windows
 		// "padding": 10,
 	}
 
