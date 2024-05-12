@@ -2,12 +2,12 @@
 
 TODO:
 
-- [ ] Show chances of getting result (maybe dropdown?)
 - [X] Add modifier
 - [X] Focus for non-core attributes
 - [X] Reload from JSON
 - [X] Save to JSON
 - [X] Search bar (partially done as I'm not sure how to tackle radio labels)
+- [X] Show chances of getting result (maybe dropdown?)
 - [X] Show what to write in discord bot
 
 
