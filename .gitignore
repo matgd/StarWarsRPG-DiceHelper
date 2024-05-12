@@ -22,3 +22,5 @@ go.work
 
 calculatorData.json
 bin/
+fyne-cross/
+Icon.png
