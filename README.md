@@ -2,6 +2,7 @@
 
 TODO:
 
+- [ ] Change font size on Windows to smaller
 - [X] Add modifier
 - [X] Focus for non-core attributes
 - [X] Reload from JSON
